@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "emoji-seq-lint"
+version = "0.1.0"
+description = "A linter for malformed emoji sequences in text files"
+readme = "README.md"
+requires-python = ">=3.8"
+license = {text = "MIT"}
+authors = [{name = "markl1988"}]
+
+[project.scripts]
+emoji-seq-lint = "emojiseqlint.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["emojiseqlint*"]
