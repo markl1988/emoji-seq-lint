@@ -68,9 +68,10 @@ emoji-seq-lint some_file.md
 ## Status
 
 The emoji data tables (`emojiseqlint/data.py`) are a curated subset,
-not the full Unicode emoji-data.txt. Coverage of modifier bases and
-text-default symbols will grow over time; false negatives on emoji not
-yet in the tables are expected for now.
+not the full Unicode emoji-data.txt. Modifier bases now cover most of
+the people/gesture blocks, and text-default symbols cover the common
+dingbats and miscellaneous symbols people forget to append U+FE0F to.
+False negatives on emoji not yet in the tables are still expected.
 
 ## License
 
