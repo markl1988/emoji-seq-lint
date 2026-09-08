@@ -39,6 +39,22 @@ output.
 
 Exit status is `1` if anything was flagged, `0` otherwise.
 
+For CI or tooling that wants structured output, pass `--format json` to
+get a JSON array of `{path, line, col, code, message}` objects instead:
+
+```
+$ python -m emojiseqlint --format json notes.md
+[
+  {
+    "path": "notes.md",
+    "line": 12,
+    "col": 5,
+    "code": "ZWJ001",
+    "message": "zero-width joiner is not joining two emoji"
+  }
+]
+```
+
 ## Install
 
 No dependencies, no build step needed to try it:
