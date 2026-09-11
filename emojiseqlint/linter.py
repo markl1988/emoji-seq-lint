@@ -14,6 +14,19 @@ from .data import (
     SKIN_TONE_MODIFIERS,
     MODIFIER_BASES,
     TEXT_DEFAULT_EMOJI,
+    FAMILY_ADULTS,
+    FAMILY_CHILDREN,
+    FAMILY_MEMBERS,
+    COUPLE_HEART,
+    KISS_MARK,
+    MALE_SIGN,
+    FEMALE_SIGN,
+    WHITE_FLAG,
+    BLACK_FLAG,
+    RAINBOW,
+    SKULL_AND_CROSSBONES,
+    TRANSGENDER_SYMBOL,
+    KNOWN_ZWJ_COMPONENTS,
     is_emoji_codepoint,
     is_regional_indicator,
 )
@@ -103,7 +116,104 @@ def _check_missing_vs16(seq):
     return findings
 
 
-_CHECKS = (_check_dangling_zwj, _check_skin_tone, _check_flag, _check_missing_vs16)
+def _split_on_zwj(spine):
+    """Split a ZWJ-joined spine into the groups it links together.
+
+    Each group is a tuple of the chars between one ZWJ and the next (a base,
+    optionally followed by U+FE0F). A dangling ZWJ produces an empty group.
+    """
+    groups = []
+    current = []
+    for ch in spine:
+        if ch == ZWJ:
+            groups.append(tuple(current))
+            current = []
+        else:
+            current.append(ch)
+    groups.append(tuple(current))
+    return groups
+
+
+def _is_family(groups):
+    if any(len(g) != 1 or g[0] not in FAMILY_MEMBERS for g in groups):
+        return False
+    adults = sum(1 for g in groups if g[0] in FAMILY_ADULTS)
+    children = sum(1 for g in groups if g[0] in FAMILY_CHILDREN)
+    return 1 <= adults <= 2 and 1 <= children <= 2 and adults + children == len(groups)
+
+
+def _is_couple_or_kiss(groups):
+    heart = (COUPLE_HEART, VS16)
+    if len(groups) == 3:
+        adult1, h, adult2 = groups
+        return (
+            len(adult1) == 1 and adult1[0] in FAMILY_ADULTS
+            and h == heart
+            and len(adult2) == 1 and adult2[0] in FAMILY_ADULTS
+        )
+    if len(groups) == 4:
+        adult1, h, kiss, adult2 = groups
+        return (
+            len(adult1) == 1 and adult1[0] in FAMILY_ADULTS
+            and h == heart
+            and kiss == (KISS_MARK,)
+            and len(adult2) == 1 and adult2[0] in FAMILY_ADULTS
+        )
+    return False
+
+
+def _is_gender_variant(groups):
+    if len(groups) != 2:
+        return False
+    role, sign = groups
+    role_ok = (
+        len(role) in (1, 2)
+        and role[0] in MODIFIER_BASES
+        and (len(role) == 1 or role[1] == VS16)
+    )
+    return role_ok and sign in ((MALE_SIGN, VS16), (FEMALE_SIGN, VS16))
+
+
+def _is_flag_overlay(groups):
+    if len(groups) != 2:
+        return False
+    base, overlay = groups
+    if base == (WHITE_FLAG, VS16):
+        return overlay in ((RAINBOW,), (TRANSGENDER_SYMBOL, VS16))
+    if base == (BLACK_FLAG,):
+        return overlay == (SKULL_AND_CROSSBONES, VS16)
+    return False
+
+
+def _check_zwj_sequence(seq):
+    if ZWJ not in seq:
+        return []
+    # Skin tone modifiers can attach to a family/role member without
+    # changing which sequence it is, so ignore them for shape matching.
+    spine = [ch for ch in seq if ch not in SKIN_TONE_MODIFIERS]
+    groups = _split_on_zwj(spine)
+    if any(len(g) == 0 for g in groups):
+        return []  # dangling ZWJ, already reported by _check_dangling_zwj
+    plain = [ch for ch in spine if ch != ZWJ]
+    if any(ch != VS16 and ch not in KNOWN_ZWJ_COMPONENTS for ch in plain):
+        return []  # involves a component we don't have curated data for
+    if (
+        _is_family(groups)
+        or _is_couple_or_kiss(groups)
+        or _is_gender_variant(groups)
+        or _is_flag_overlay(groups)
+    ):
+        return []
+    return [(seq.index(ZWJ), "ZWJ002", "emoji joined with ZWJ do not form a recognized sequence")]
+
+
+_CHECKS = (
+    _check_dangling_zwj,
+    _check_zwj_sequence,
+    _check_skin_tone,
+    _check_flag,
+    _check_missing_vs16,
+)
 
 
 def scan_line(text, lineno):

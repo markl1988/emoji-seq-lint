@@ -75,6 +75,7 @@ emoji-seq-lint some_file.md
 | Code      | Meaning                                                        |
 | --------- | --------------------------------------------------------------- |
 | `ZWJ001`  | zero-width joiner not joining two valid emoji                  |
+| `ZWJ002`  | emoji joined with ZWJ do not form a recognized sequence         |
 | `TONE001` | skin tone modifier on an emoji that doesn't support one         |
 | `TONE002` | more than one skin tone modifier in a cluster                   |
 | `FLAG001` | odd number of regional indicators (incomplete flag)             |
@@ -88,6 +89,16 @@ not the full Unicode emoji-data.txt. Modifier bases now cover most of
 the people/gesture blocks, and text-default symbols cover the common
 dingbats and miscellaneous symbols people forget to append U+FE0F to.
 False negatives on emoji not yet in the tables are still expected.
+
+ZWJ001 only checks that a joiner has emoji on both sides. ZWJ002 goes
+further and checks the *shape* of the whole joined cluster against a
+closed set of known-good patterns: families (man/woman/boy/girl
+combinations), couples and kisses, gender variants (a role plus
+U+2642/U+2640), and the flag overlays (rainbow, pirate, transgender).
+It only fires when every component in the cluster is one it
+recognizes, so profession sequences ("person: microscope" and the
+like) are left alone rather than guessed at - that's still a false
+negative until those get their own table.
 
 ## License
 

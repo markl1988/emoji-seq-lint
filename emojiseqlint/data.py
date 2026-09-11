@@ -77,6 +77,42 @@ MODIFIER_BASES = MODIFIER_BASE_SINGLES | {
     chr(cp) for lo, hi in MODIFIER_BASE_RANGES for cp in range(lo, hi + 1)
 }
 
+# Components of the closed set of ZWJ sequences we know how to validate:
+# families, couples/kisses, gender variants ("role" + gender sign), and the
+# flag overlays (rainbow, pirate, transgender). Profession sequences (role +
+# object, e.g. "person: microscope") are open-ended and not covered yet.
+FAMILY_ADULTS = {"\U0001F468", "\U0001F469"}  # man, woman
+FAMILY_CHILDREN = {"\U0001F466", "\U0001F467"}  # boy, girl
+FAMILY_MEMBERS = FAMILY_ADULTS | FAMILY_CHILDREN
+
+COUPLE_HEART = "❤"  # heavy black heart
+KISS_MARK = "\U0001F48B"
+
+MALE_SIGN = "♂"
+FEMALE_SIGN = "♀"
+GENDER_SIGNS = {MALE_SIGN, FEMALE_SIGN}
+
+WHITE_FLAG = "\U0001F3F3"
+BLACK_FLAG = "\U0001F3F4"
+RAINBOW = "\U0001F308"
+SKULL_AND_CROSSBONES = "☠"
+TRANSGENDER_SYMBOL = "⚧"
+
+KNOWN_ZWJ_COMPONENTS = (
+    FAMILY_MEMBERS
+    | MODIFIER_BASES
+    | GENDER_SIGNS
+    | {
+        COUPLE_HEART,
+        KISS_MARK,
+        WHITE_FLAG,
+        BLACK_FLAG,
+        RAINBOW,
+        SKULL_AND_CROSSBONES,
+        TRANSGENDER_SYMBOL,
+    }
+)
+
 # Emoji that default to *text* presentation and need a trailing VS16 to
 # render as a colored glyph instead of flat text. Curated subset of the
 # ones people misuse most.
