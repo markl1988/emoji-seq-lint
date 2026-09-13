@@ -68,7 +68,15 @@ def _check_dangling_zwj(seq):
     for i, ch in enumerate(seq):
         if ch != ZWJ:
             continue
-        has_prev = i > 0 and is_emoji_codepoint(seq[i - 1])
+        # The component right before a ZWJ often isn't the base emoji
+        # itself but a trailing VS16 (hearts) or skin tone modifier
+        # (people/gestures) attached to it, e.g. the heart in the
+        # couple-with-heart sequence or a role in a gender variant.
+        has_prev = i > 0 and (
+            is_emoji_codepoint(seq[i - 1])
+            or seq[i - 1] == VS16
+            or seq[i - 1] in SKIN_TONE_MODIFIERS
+        )
         has_next = i < len(seq) - 1 and (
             is_emoji_codepoint(seq[i + 1]) or seq[i + 1] in SKIN_TONE_MODIFIERS
         )

@@ -70,6 +70,12 @@ pip install -e .
 emoji-seq-lint some_file.md
 ```
 
+## Tests
+
+```
+python -m unittest discover
+```
+
 ## Rule codes
 
 | Code      | Meaning                                                        |
