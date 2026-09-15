@@ -1,0 +1,6 @@
+- id: emoji-seq-lint
+  name: emoji-seq-lint
+  description: Check text files for malformed emoji code point sequences.
+  entry: emoji-seq-lint
+  language: python
+  types: [text]

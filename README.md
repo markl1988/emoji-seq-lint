@@ -70,6 +70,22 @@ pip install -e .
 emoji-seq-lint some_file.md
 ```
 
+## Pre-commit
+
+This repo ships a `.pre-commit-hooks.yaml`, so other projects can run it
+via the [pre-commit](https://pre-commit.com) framework by adding this to
+their `.pre-commit-config.yaml`:
+
+```yaml
+repos:
+  - repo: https://github.com/markl1988/emoji-seq-lint
+    rev: main
+    hooks:
+      - id: emoji-seq-lint
+```
+
+Pin `rev` to a tag once one exists instead of tracking `main`.
+
 ## Tests
 
 ```
