@@ -39,6 +39,13 @@ output.
 
 Exit status is `1` if anything was flagged, `0` otherwise.
 
+To suppress specific rule codes, pass `--ignore` (repeatable, or
+comma-separated):
+
+```
+$ python -m emojiseqlint --ignore VS001 --ignore TONE001,TONE002 notes.md
+```
+
 For CI or tooling that wants structured output, pass `--format json` to
 get a JSON array of `{path, line, col, code, message}` objects instead:
 

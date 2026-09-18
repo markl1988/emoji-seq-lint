@@ -54,6 +54,32 @@ class CliTests(unittest.TestCase):
         self.assertEqual(payload[0]["path"], path)
         self.assertEqual(payload[0]["code"], "ZWJ001")
 
+    def test_ignore_flag_suppresses_matching_codes(self):
+        prefix = "look at the sun: "
+        path = self._write(prefix + SUN + "\n")
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out):
+            status = main(["--ignore", "VS001", path])
+        self.assertEqual(status, 0)
+        self.assertEqual(out.getvalue(), "")
+
+    def test_ignore_flag_accepts_comma_separated_codes(self):
+        path = self._write("truncated bug: " + GRINNING_FACE + ZWJ + "\n")
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out):
+            status = main(["--ignore", "ZWJ001,ZWJ002", path])
+        self.assertEqual(status, 0)
+        self.assertEqual(out.getvalue(), "")
+
+    def test_ignore_flag_leaves_other_codes_reported(self):
+        prefix = "look at the sun: "
+        path = self._write(prefix + SUN + "\n")
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out):
+            status = main(["--ignore", "TONE001", path])
+        self.assertEqual(status, 1)
+        self.assertIn("VS001", out.getvalue())
+
     def test_missing_file_is_reported_but_does_not_crash(self):
         out = io.StringIO()
         err = io.StringIO()

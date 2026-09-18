@@ -7,7 +7,7 @@ import sys
 from .linter import scan_text
 
 
-def _iter_findings(paths):
+def _iter_findings(paths, ignore=frozenset()):
     for path in paths:
         try:
             with open(path, "r", encoding="utf-8") as handle:
@@ -16,6 +16,8 @@ def _iter_findings(paths):
             print(f"{path}: could not read file ({exc})", file=sys.stderr)
             continue
         for finding in scan_text(text):
+            if finding.code in ignore:
+                continue
             yield path, finding
 
 
@@ -50,9 +52,17 @@ def main(argv=None):
         default="text",
         help="output format, for piping into other tools (default: text)",
     )
+    parser.add_argument(
+        "--ignore",
+        action="append",
+        default=[],
+        metavar="CODE",
+        help="rule code to suppress, e.g. VS001 (repeatable, or comma-separated)",
+    )
     args = parser.parse_args(argv)
+    ignore = {code.strip() for group in args.ignore for code in group.split(",") if code.strip()}
 
-    results = list(_iter_findings(args.paths))
+    results = list(_iter_findings(args.paths, ignore))
     if args.format == "json":
         _print_json(results)
     else:
